@@ -1,0 +1,6 @@
+[user]
+	name = brad
+	email = bradmartin333@gmail.com
+[alias]
+	cmp = "!f() { git add -A && git commit -m \"$@\" && git push; }; f"
+	ac = "!git add -A && git commit -m "
