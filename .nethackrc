@@ -35,7 +35,7 @@ MENUCOLOR="^uncursed "=white
 MENUCOLOR=" uncursed "=white
 
 ## Messagetypes
-MSGTYPE=hide "You swap places with your .*"
+MSGTYPE=hide "You swap places with .*"
 
 ## Use status hilites
 OPTIONS=statushilites
