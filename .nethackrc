@@ -18,7 +18,7 @@ OPTIONS=sortloot:full
 OPTIONS=showscore
 OPTIONS=statuslines:3
 OPTIONS=fruit:Popcorn
-OPTIONS=horsename:Boonie,catname:Timpie,dogname:Goose
+OPTIONS=horsename:Boonie,catname:Timpie,dogname:Fido
 
 ## Colored menus. Regular expressions allowed.
 OPTIONS=menucolors
@@ -36,6 +36,7 @@ MENUCOLOR=" uncursed "=white
 
 ## Messagetypes
 MSGTYPE=hide "You swap places with .*"
+MSGTYPE=hide "You stop.*is in the way!"
 
 ## Use status hilites
 OPTIONS=statushilites
