@@ -1,5 +1,18 @@
 export PATH="$HOME/.local/bin:$PATH"
 
+# styling
+export CLICOLOR=1
+export LSCOLORS=gxfxcxdxbxegedabagacad
+export PS1="%F{cyan}%~ %F{green}➜ %f"
+
+# git branch
+parse_git_branch() {
+  git branch 2> /dev/null | sed -n -e 's/^\* \(.*\)/(\1)/p'
+}
+setopt PROMPT_SUBST
+export PROMPT='%F{cyan}%~%f %F{green}$(parse_git_branch)%f $ '
+
+# control lights
 wiz() {
   local payload
   case "$1" in
