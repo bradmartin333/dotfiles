@@ -1,6 +1,8 @@
 [user]
-	name = brad
+	name = bradmartin333
 	email = bradmartin333@gmail.com
+[init]
+	defaultBranch = main
 [alias]
 	cmp = "!f() { git add -A && git commit -m \"$@\" && git push; }; f"
 	ac = "!git add -A && git commit -m "
