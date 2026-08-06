@@ -1,5 +1,7 @@
 # Load/unload environment variables based on $PWD
 brew "direnv"
+# Pack, ship and run any application as a lightweight container
+brew "docker"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
