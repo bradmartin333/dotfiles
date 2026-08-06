@@ -2,6 +2,8 @@
 brew "direnv"
 # Pack, ship and run any application as a lightweight container
 brew "docker"
+# Isolated development environments using Docker
+brew "docker-compose"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
