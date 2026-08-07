@@ -1,5 +1,10 @@
 export PATH="$HOME/.local/bin:$PATH"
 
+# aliases
+alias serve="python3 -m http.server"
+alias hmm="nano '$(date +%d%b%Y).txt'"
+alias markdown="open -a markedit"
+
 # styling
 export CLICOLOR=1
 export LSCOLORS=gxfxcxdxbxegedabagacad
