@@ -55,6 +55,10 @@ Branch name: `<prefix><sanitized-identifier>-<slugified-task-title>` (identifier
 
 - **Resume check first:** run `git branch --list '*<sanitized-identifier>*'`. If a matching local branch exists, `git checkout` it and skip straight to step 6 — do not create a new branch or re-branch from base.
 - **Otherwise:** `hotfix/` branches from latest `main`; `feature/`/`bugfix/` branch from latest `develop`, falling back to `main` if the repo has no `develop`. Fetch and fast-forward the base branch, then `git checkout -b <branch-name> <base>`.
+- **Move the task to "Doing"** — only when a *new* branch was just created above (not on resume). The MCP server has no kanban/bucket tool, so do this via a direct REST call using the same credentials already configured for the `vikunja` MCP server (`VIKUNJA_URL`/`VIKUNJA_API_TOKEN` in `~/.claude.json`'s `mcpServers.vikunja.env`):
+  1. `GET {VIKUNJA_URL}/projects/{project_id}/views` → find the entry with `view_kind == "kanban"`, note its `id` as `{view_id}`.
+  2. `GET {VIKUNJA_URL}/projects/{project_id}/views/{view_id}/buckets` → find the bucket whose `title` case-insensitively matches "doing", note its `id` as `{bucket_id}`. If no such bucket exists, skip this silently and mention it in the orient summary — don't guess a different bucket or create one.
+  3. `POST {VIKUNJA_URL}/projects/{project_id}/views/{view_id}/buckets/{bucket_id}/tasks` with JSON body `{"task_id": <task's global id>}`.
 
 ## 6. Orient
 
