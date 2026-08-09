@@ -15,6 +15,7 @@ declare -A FILES=(
 # Claude files to symlink
 declare -A CLAUDE_FILES=(
     ["claude/settings.json"]="$CLAUDE_DIR/settings.json"
+    ["claude/commands/vikunja-task.md"]="$CLAUDE_DIR/commands/vikunja-task.md"
 )
 
 # Shell files to source after linking (gitconfig is not shell syntax, skip it)
@@ -34,6 +35,9 @@ create_symlink() {
     if [ -e "$target" ] || [ -L "$target" ]; then
         rm -f "$target"
     fi
+
+    # Ensure the target's parent directory exists
+    mkdir -p "$(dirname "$target")"
 
     # Create the symlink
     ln -s "$repo_file" "$target"
