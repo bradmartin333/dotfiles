@@ -30,12 +30,21 @@ Fetch the task's parent project via the `vikunja` MCP tools. Search the project'
 
 If the project description has neither, fall back to scanning the task's own description the same way. If still nothing is found, stop and ask the user which repo this task belongs to rather than guessing.
 
-## 3. Open the workspace
+## 3. Gather full context before doing anything
+
+Don't start work off the title and description alone — pull in what's already been said about this task:
+
+- **Comments:** call `vikunja_tasks.comment` with the task's `id` and no `comment` argument to list existing comments. Read through them for prior decisions, blockers, or requirements that supersede or refine the description — treat later comments as more current than the original description if they conflict.
+- **Attachments:** check the fetched task object for an `attachments` array (filename/id/size metadata). The MCP server's `attach` subcommand isn't implemented (MCP protocol limitation), so file *content* can't be pulled through it. If attachments exist and their content actually matters for the work:
+  - Try a direct read via the Vikunja REST API using the same credentials already configured for the `vikunja` MCP server (`VIKUNJA_URL`/`VIKUNJA_API_TOKEN` in `~/.claude.json`'s `mcpServers.vikunja.env`): `GET {VIKUNJA_URL}/tasks/{id}/attachments/{attachmentId}`.
+  - If that's not workable, just tell the user what attachments exist (filenames) and that you can't read their contents automatically — don't silently ignore them.
+
+## 4. Open the workspace
 
 - If `~/src/<repo>` doesn't exist, run `gh repo clone <owner>/<repo> ~/src/<repo>`.
 - `cd` into `~/src/<repo>`.
 
-## 4. Branch (git-flow by task type)
+## 5. Branch (git-flow by task type)
 
 Determine a prefix from the task's Vikunja label(s), case-insensitive substring match:
 - contains "hotfix", "urgent", or "critical" → `hotfix/`
@@ -44,14 +53,14 @@ Determine a prefix from the task's Vikunja label(s), case-insensitive substring 
 
 Branch name: `<prefix><sanitized-identifier>-<slugified-task-title>` (identifier lowercased with any `#`/non-alnum stripped, e.g. `MOVE-42` → `move-42`; spaces/punctuation in the title → `-`).
 
-- **Resume check first:** run `git branch --list '*<sanitized-identifier>*'`. If a matching local branch exists, `git checkout` it and skip straight to step 5 — do not create a new branch or re-branch from base.
+- **Resume check first:** run `git branch --list '*<sanitized-identifier>*'`. If a matching local branch exists, `git checkout` it and skip straight to step 6 — do not create a new branch or re-branch from base.
 - **Otherwise:** `hotfix/` branches from latest `main`; `feature/`/`bugfix/` branch from latest `develop`, falling back to `main` if the repo has no `develop`. Fetch and fast-forward the base branch, then `git checkout -b <branch-name> <base>`.
 
-## 5. Orient
+## 6. Orient
 
-Print a short summary: task title, description, labels, due date, resolved repo, and the branch now checked out (new vs. resumed).
+Print a short summary: task title, description, labels, due date, resolved repo, the branch now checked out (new vs. resumed), a distilled takeaway from existing comments (if any), and any attachments found (if any).
 
-## 6. Working agreement for the rest of the session
+## 7. Working agreement for the rest of the session
 
 - As work progresses, post short progress comments on the Vikunja task automatically via the `vikunja` MCP comment tool — no need to ask each time.
 - Regardless of mode, always ask for explicit confirmation before marking the Vikunja task Done.
