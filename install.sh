@@ -1,42 +1,84 @@
 #!/usr/bin/env bash
 
+set -e
+
 # Define directories
 DOTFILES_DIR="$HOME/.dotfiles"
+CLAUDE_DIR="$HOME/.claude"
 
 # List of files to symlink (repo_file:home_link)
 declare -A FILES=(
     ["zshrc"]="$HOME/.zshrc"
     ["gitconfig"]="$HOME/.gitconfig"
-    ["bash_aliases"]="$HOME/.bash_aliases"
+)
+
+# Claude files to symlink
+declare -A CLAUDE_FILES=(
+    ["claude/settings.json"]="$CLAUDE_DIR/settings.json"
 )
 
 # Shell files to source after linking (gitconfig is not shell syntax, skip it)
-SOURCE_FILES=("$HOME/.zshrc" "$HOME/.bash_aliases")
+SOURCE_FILES=("$HOME/.zshrc")
 
-echo "Creating symlinks..."
-for REPO_FILE in "${!FILES[@]}"; do
-    TARGET="${FILES[$REPO_FILE]}"
+# Helper function to create symlink safely
+create_symlink() {
+    local repo_file="$1"
+    local target="$2"
+
+    if [ ! -f "$repo_file" ]; then
+        echo "⊘ Skipping $repo_file (file not found in dotfiles)"
+        return 0
+    fi
 
     # Remove existing file or symlink to avoid conflicts
-    rm -rf "$TARGET"
+    if [ -e "$target" ] || [ -L "$target" ]; then
+        rm -f "$target"
+    fi
 
     # Create the symlink
-    ln -s "$DOTFILES_DIR/$REPO_FILE" "$TARGET"
-    echo "Linked $TARGET -> $DOTFILES_DIR/$REPO_FILE"
+    ln -s "$repo_file" "$target"
+    echo "✓ Linked $target -> $repo_file"
+}
+
+echo "Creating symlinks..."
+
+# Symlink regular dotfiles
+for REPO_FILE in "${!FILES[@]}"; do
+    TARGET="${FILES[$REPO_FILE]}"
+    create_symlink "$DOTFILES_DIR/$REPO_FILE" "$TARGET"
 done
 
-echo "Sourcing dotfiles..."
-for TARGET in "${SOURCE_FILES[@]}"; do
-    source "$TARGET"
-    echo "Sourced $TARGET"
-done
-
-if command -v brew &> /dev/null; then
-    echo "Installing Brewfile dependencies..."
-    brew bundle --file="$DOTFILES_DIR/Brewfile"
-else
-    echo "Homebrew not found, skipping Brewfile installation."
+# Symlink Claude files (create .claude dir if needed)
+if [ ! -d "$CLAUDE_DIR" ]; then
+    mkdir -p "$CLAUDE_DIR"
+    echo "✓ Created $CLAUDE_DIR"
 fi
 
-echo "Dotfiles installation complete!"
+for REPO_FILE in "${!CLAUDE_FILES[@]}"; do
+    TARGET="${CLAUDE_FILES[$REPO_FILE]}"
+    create_symlink "$DOTFILES_DIR/$REPO_FILE" "$TARGET"
+done
+
+echo -e "\nSourcing shell dotfiles..."
+for TARGET in "${SOURCE_FILES[@]}"; do
+    if [ -f "$TARGET" ]; then
+        source "$TARGET" 2>/dev/null && echo "✓ Sourced $TARGET" || echo "⊘ Skipped $TARGET (shell incompatibility)"
+    else
+        echo "⊘ Skipping $TARGET (file not found)"
+    fi
+done
+
+echo -e "\nInstalling Homebrew dependencies..."
+if command -v brew &> /dev/null; then
+    if [ -f "$DOTFILES_DIR/Brewfile" ]; then
+        brew bundle --file="$DOTFILES_DIR/Brewfile"
+        echo "✓ Brewfile installation complete"
+    else
+        echo "⊘ Brewfile not found, skipping"
+    fi
+else
+    echo "⊘ Homebrew not found, skipping Brewfile installation"
+fi
+
+echo -e "\n✓ Dotfiles installation complete!"
 

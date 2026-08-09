@@ -1,0 +1,28 @@
+{
+  "enableWorkflows": true,
+  "effortLevel": "high",
+  "theme": "dark",
+  "useAutoModeDuringPlan": false,
+  "permissions": {
+    "allow": [
+      "Bash(git checkout -b feature/*)",
+      "Bash(git checkout -b bugfix/*)",
+      "Bash(git branch feature/*)",
+      "Bash(git branch bugfix/*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command' | grep -q 'git worktree' && echo '{\"continue\":false,\"stopReason\":\"Git worktrees are disabled. Use git checkout -b feature/... or bugfix/... to create branches instead.\"}' || echo '{\"continue\":true}'",
+            "statusMessage": "Checking for worktree usage..."
+          }
+        ]
+      }
+    ]
+  }
+}
