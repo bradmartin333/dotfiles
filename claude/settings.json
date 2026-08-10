@@ -8,7 +8,10 @@
       "Bash(git checkout -b feature/*)",
       "Bash(git checkout -b bugfix/*)",
       "Bash(git branch feature/*)",
-      "Bash(git branch bugfix/*)"
+      "Bash(git branch bugfix/*)",
+      "mcp__vikunja__vikunja_projects",
+      "mcp__vikunja__vikunja_tasks",
+      "mcp__vikunja__vikunja_auth"
     ]
   },
   "hooks": {
