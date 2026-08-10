@@ -6,3 +6,6 @@
 [alias]
 	cmp = "!f() { git add -A && git commit -m \"$@\" && git push; }; f"
 	ac = "!git add -A && git commit -m "
+	gone = !git fetch --prune && git branch -vv | awk \"/: gone]/{print \\$1}\" | xargs -r git branch -d
+[fetch]
+	prune = true
