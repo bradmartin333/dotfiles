@@ -39,6 +39,8 @@ Don't start work off the title and description alone — pull in what's already 
   - Try a direct read via the Vikunja REST API using the same credentials already configured for the `vikunja` MCP server (`VIKUNJA_URL`/`VIKUNJA_API_TOKEN` in `~/.claude.json`'s `mcpServers.vikunja.env`): `GET {VIKUNJA_URL}/tasks/{id}/attachments/{attachmentId}`.
   - If that's not workable, just tell the user what attachments exist (filenames) and that you can't read their contents automatically — don't silently ignore them.
 
+Ask for clarification if any of the above context is unclear or incomplete, and don't proceed until you have a clear understanding of the task's requirements.
+
 ## 4. Open the workspace
 
 - If `~/src/<repo>` doesn't exist, run `gh repo clone <owner>/<repo> ~/src/<repo>`.
@@ -46,12 +48,14 @@ Don't start work off the title and description alone — pull in what's already 
 
 ## 5. Branch (git-flow by task type)
 
+If the task contains the label `research`, then do not make a branch at all — just move the task to "Doing" and start work in the current branch. If action items are discovered, suggest creating a new task for them instead of branching off this one.
+
 Determine a prefix from the task's Vikunja label(s), case-insensitive substring match:
 - contains "hotfix", "urgent", or "critical" → `hotfix/`
 - contains "bug" or "fix" → `bugfix/`
 - otherwise → `feature/`
 
-Branch name: `<prefix><sanitized-identifier>-<slugified-task-title>` (identifier lowercased with any `#`/non-alnum stripped, e.g. `MOVE-42` → `move-42`; spaces/punctuation in the title → `-`).
+Branch name: `<prefix><sanitized-identifier>-<slugified-task-title>` (identifier lowercased with any `#`/non-alnum stripped, e.g. `MOVE-42` → `move-42`; spaces/punctuation in the title → `-`). **Do not create a worktree** — just a normal branch in the repo.
 
 - **Resume check first:** run `git branch --list '*<sanitized-identifier>*'`. If a matching local branch exists, `git checkout` it and skip straight to step 6 — do not create a new branch or re-branch from base.
 - **Otherwise:** `hotfix/` branches from latest `main`; `feature/`/`bugfix/` branch from latest `develop`, falling back to `main` if the repo has no `develop`. Fetch and fast-forward the base branch, then `git checkout -b <branch-name> <base>`.
@@ -72,3 +76,8 @@ Print a short summary: task title, description, labels, due date, resolved repo,
 - **Whenever a PR gets opened for this task**, post a comment on the Vikunja task with the PR URL (`gh pr create` prints it on success — use that exact URL, don't reconstruct it).
 - **`manual` mode (default):** commit locally only. Never run `git push` or `gh pr create` — leave pushing and opening a PR to the user. (The branch-link/PR-link comments above still apply if the user asks you to push or open a PR mid-session.)
 - **`auto` mode:** once the work is ready, push the branch (→ comment its link per above), then open a draft PR (`gh pr create --draft`) referencing the Vikunja task (→ comment its link per above) — all without asking first, since the user chose `auto` at invocation as standing consent for this session's push/PR actions specifically. This does not extend to marking the Vikunja task Done, which still requires confirmation.
+
+## 8. Guidelines for creating new tasks
+
+- Make sure task names are simple so that future branches can have a clean slugified name. Avoid punctuation, special characters, and long sentences.
+- If a task is too big, break it into subtasks with relations established in Vikunja. Subtasks can use the same repo and branch as the parent task.
