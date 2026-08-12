@@ -4,7 +4,7 @@ export PATH="$HOME/.local/bin:$PATH"
 alias serve="python3 -m http.server"
 alias hmm='nano "$(date +%d%b%Y).txt"'
 alias markdown="open -a markedit"
-alias hl="ssh homelab"
+alias hl='echo "starting tailscale"; tailscale up; echo "connecting"; ssh homelab;'
 
 # styling
 export CLICOLOR=1
