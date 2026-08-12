@@ -14,8 +14,6 @@ brew "node"
 brew "shellcheck"
 # Display directories as trees (with optional color/HTML output)
 brew "tree"
-# Application uninstaller
-cask "appcleaner"
 # Free and open-source image editor
 cask "gimp"
 # Vector graphics editor
