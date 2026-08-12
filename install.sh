@@ -18,9 +18,6 @@ declare -A CLAUDE_FILES=(
     ["claude/commands/vikunja-task.md"]="$CLAUDE_DIR/commands/vikunja-task.md"
 )
 
-# Shell files to source after linking (gitconfig is not shell syntax, skip it)
-SOURCE_FILES=("$HOME/.zshrc")
-
 # Helper function to create symlink safely
 create_symlink() {
     local repo_file="$1"
@@ -63,15 +60,6 @@ for REPO_FILE in "${!CLAUDE_FILES[@]}"; do
     create_symlink "$DOTFILES_DIR/$REPO_FILE" "$TARGET"
 done
 
-echo -e "\nSourcing shell dotfiles..."
-for TARGET in "${SOURCE_FILES[@]}"; do
-    if [ -f "$TARGET" ]; then
-        source "$TARGET" 2>/dev/null && echo "✓ Sourced $TARGET" || echo "⊘ Skipped $TARGET (shell incompatibility)"
-    else
-        echo "⊘ Skipping $TARGET (file not found)"
-    fi
-done
-
 echo -e "\nInstalling Homebrew dependencies..."
 if command -v brew &> /dev/null; then
     if [ -f "$DOTFILES_DIR/Brewfile" ]; then
@@ -85,4 +73,5 @@ else
 fi
 
 echo -e "\n✓ Dotfiles installation complete!"
+echo "  run 'exec zsh' to pick up the new shell config"
 
