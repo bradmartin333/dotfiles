@@ -27,5 +27,6 @@
   "enableWorkflows": true,
   "effortLevel": "high",
   "theme": "dark",
-  "useAutoModeDuringPlan": false
+  "useAutoModeDuringPlan": false,
+  "agentPushNotifEnabled": true
 }

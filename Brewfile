@@ -4,6 +4,8 @@ brew "direnv"
 brew "docker"
 # Isolated development environments using Docker
 brew "docker-compose"
+# Perl lib for reading and writing EXIF metadata
+brew "exiftool"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system

@@ -60,6 +60,19 @@ for REPO_FILE in "${!CLAUDE_FILES[@]}"; do
     create_symlink "$DOTFILES_DIR/$REPO_FILE" "$TARGET"
 done
 
+# Symlink the whole Claude skills directory so new skills are picked up automatically
+SKILLS_SOURCE="$DOTFILES_DIR/claude/skills"
+SKILLS_TARGET="$CLAUDE_DIR/skills"
+if [ -d "$SKILLS_SOURCE" ]; then
+    if [ -e "$SKILLS_TARGET" ] || [ -L "$SKILLS_TARGET" ]; then
+        rm -rf "$SKILLS_TARGET"
+    fi
+    ln -s "$SKILLS_SOURCE" "$SKILLS_TARGET"
+    echo "✓ Linked $SKILLS_TARGET -> $SKILLS_SOURCE"
+else
+    echo "⊘ Skipping $SKILLS_SOURCE (directory not found in dotfiles)"
+fi
+
 echo -e "\nInstalling Homebrew dependencies..."
 if command -v brew &> /dev/null; then
     if [ -f "$DOTFILES_DIR/Brewfile" ]; then
