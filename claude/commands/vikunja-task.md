@@ -2,9 +2,7 @@
 description: Pick up a Vikunja task by ID, resolve its repo, branch, and start work
 ---
 
-Arguments (`$ARGUMENTS`): `<task-ref> [mode]` — `mode` is `manual` (default) or `auto`.
-
-Parse `$ARGUMENTS`: the first token is the task reference, the optional second token is the mode. If mode isn't `manual` or `auto`, treat it as `manual` and mention the fallback.
+Arguments (`$ARGUMENTS`): `<task-ref>`.
 
 ## 1. Resolve and fetch the task
 
@@ -35,6 +33,7 @@ If the project description has neither, fall back to scanning the task's own des
 Don't start work off the title and description alone — pull in what's already been said about this task:
 
 - **Comments:** call `vikunja_tasks.comment` with the task's `id` and no `comment` argument to list existing comments. Read through them for prior decisions, blockers, or requirements that supersede or refine the description — treat later comments as more current than the original description if they conflict.
+- **Related tasks:** check the fetched task's `related_tasks` object. Each relation kind (subtask, parenttask, related, blocking, blocked, etc.) can carry prior decisions or requirements that this task builds on or depends on — don't skip past them as decoration. If a related task's own description/comments look relevant but are thin in what `related_tasks` already returned, pull the full task with `vikunja_tasks.get` (and its comments) using that related task's `id`. Note anything load-bearing from related tasks in the step 6 orient summary.
 - **Attachments:** check the fetched task object for an `attachments` array (filename/id/size metadata). The MCP server's `attach` subcommand isn't implemented (MCP protocol limitation), so file *content* can't be pulled through it. If attachments exist and their content actually matters for the work:
   - Try a direct read via the Vikunja REST API using the same credentials already configured for the `vikunja` MCP server (`VIKUNJA_URL`/`VIKUNJA_API_TOKEN` in `~/.claude.json`'s `mcpServers.vikunja.env`): `GET {VIKUNJA_URL}/tasks/{id}/attachments/{attachmentId}`.
   - If that's not workable, just tell the user what attachments exist (filenames) and that you can't read their contents automatically — don't silently ignore them.
@@ -46,11 +45,13 @@ Ask for clarification if any of the above context is unclear or incomplete, and 
 - If `~/src/<repo>` doesn't exist, run `gh repo clone <owner>/<repo> ~/src/<repo>`.
 - `cd` into `~/src/<repo>`.
 
-## 5. Branch (git-flow by task type)
+## 5. Branch (git-flow by task type, confirmed first)
 
-If the task contains the label `research`, then do not make a branch at all — just move the task to "Doing" and start work in the current branch. If action items are discovered, suggest creating a new task for them instead of branching off this one.
+If the task contains the label `research`, then do not make a branch at all — just move the task to "Doing" and start work in the current branch. If action items are discovered, suggest creating a new task for them instead of branching off this one. (Skip the confirmation below in this case — no branch decision to make.)
 
-Determine a prefix from the task's Vikunja label(s), case-insensitive substring match:
+Otherwise, don't assume git-flow — confirm with the user first: ask whether to branch per the usual git-flow procedure below, or work directly in the current/develop branch instead (sometimes preferred, e.g. for a small change that doesn't warrant its own branch). If they want to work directly in the current branch, skip the rest of this step (no branch created, no base to fast-forward) and go straight to step 6, noting in the orient summary that this task is running without a dedicated branch.
+
+If git-flow branching is confirmed, determine a prefix from the task's Vikunja label(s), case-insensitive substring match:
 - contains "hotfix", "urgent", or "critical" → `hotfix/`
 - contains "bug" or "fix" → `bugfix/`
 - otherwise → `feature/`
@@ -66,16 +67,16 @@ Branch name: `<prefix><sanitized-identifier>-<slugified-task-title>` (identifier
 
 ## 6. Orient
 
-Print a short summary: task title, description, labels, due date, resolved repo, the branch now checked out (new vs. resumed), a distilled takeaway from existing comments (if any), and any attachments found (if any).
+Print a short summary: task title, description, labels, due date, resolved repo, the branch now checked out (new, resumed, or none if working directly in the current branch), a distilled takeaway from existing comments and related tasks (if any), and any attachments found (if any).
 
 ## 7. Working agreement for the rest of the session
 
 - As work progresses, post short progress comments on the Vikunja task automatically via the `vikunja` MCP comment tool — no need to ask each time.
-- Regardless of mode, always ask for explicit confirmation before marking the Vikunja task Done.
-- **Whenever this task's branch gets pushed to GitHub** — automatically in `auto` mode, or on request in `manual` mode — post a comment on the Vikunja task with its branch link: `https://github.com/<owner>/<repo>/tree/<branch>` (get `<owner>/<repo>` from step 2's resolved repo).
+- Always ask for explicit confirmation before marking the Vikunja task Done.
+- Commit locally as work is completed. Never run `git push` or `gh pr create` on your own initiative — leave pushing and opening a PR to the user, and wait for them to ask.
+- Exception: if the user explicitly grants standing consent to push/open PRs as you go (e.g. "you can take the wheel on pushes from here" or "push whenever you're ready without asking"), honor that for the rest of *this* session only — it doesn't carry forward to future invocations of this skill, and it never extends to marking the Vikunja task Done, which always requires confirmation regardless.
+- **Whenever this task's branch gets pushed to GitHub**, post a comment on the Vikunja task with its branch link: `https://github.com/<owner>/<repo>/tree/<branch>` (get `<owner>/<repo>` from step 2's resolved repo).
 - **Whenever a PR gets opened for this task**, post a comment on the Vikunja task with the PR URL (`gh pr create` prints it on success — use that exact URL, don't reconstruct it).
-- **`manual` mode (default):** commit locally only. Never run `git push` or `gh pr create` — leave pushing and opening a PR to the user. (The branch-link/PR-link comments above still apply if the user asks you to push or open a PR mid-session.)
-- **`auto` mode:** once the work is ready, push the branch (→ comment its link per above), then open a draft PR (`gh pr create --draft`) referencing the Vikunja task (→ comment its link per above) — all without asking first, since the user chose `auto` at invocation as standing consent for this session's push/PR actions specifically. This does not extend to marking the Vikunja task Done, which still requires confirmation.
 
 ## 8. Guidelines for creating new tasks
 
