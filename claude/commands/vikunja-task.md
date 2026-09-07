@@ -47,9 +47,11 @@ Ask for clarification if any of the above context is unclear or incomplete, and 
 
 ## 5. Branch (git-flow by task type, confirmed first)
 
-If the task contains the label `research`, then do not make a branch at all — just move the task to "Doing" and start work in the current branch. If action items are discovered, suggest creating a new task for them instead of branching off this one. (Skip the confirmation below in this case — no branch decision to make.)
+Regardless of which path below is taken, moving the task to "Doing" (per **Moving the task to "Doing"** below) always happens on a fresh pickup — it is not tied to git-flow specifically.
 
-Otherwise, don't assume git-flow — confirm with the user first: ask whether to branch per the usual git-flow procedure below, or work directly in the current/develop branch instead (sometimes preferred, e.g. for a small change that doesn't warrant its own branch). If they want to work directly in the current branch, skip the rest of this step (no branch created, no base to fast-forward) and go straight to step 6, noting in the orient summary that this task is running without a dedicated branch.
+If the task contains the label `research`, then do not make a branch at all — move the task to "Doing" and start work in the current branch. If action items are discovered, suggest creating a new task for them instead of branching off this one. (Skip the confirmation below in this case — no branch decision to make.)
+
+Otherwise, don't assume git-flow — confirm with the user first: ask whether to branch per the usual git-flow procedure below, or work directly in the current/develop branch instead (sometimes preferred, e.g. for a small change that doesn't warrant its own branch). If they want to work directly in the current branch, move the task to "Doing", then skip the rest of this step (no branch created, no base to fast-forward) and go straight to step 6, noting in the orient summary that this task is running without a dedicated branch.
 
 If git-flow branching is confirmed, determine a prefix from the task's Vikunja label(s), case-insensitive substring match:
 - contains "hotfix", "urgent", or "critical" → `hotfix/`
@@ -58,12 +60,15 @@ If git-flow branching is confirmed, determine a prefix from the task's Vikunja l
 
 Branch name: `<prefix><sanitized-identifier>-<slugified-task-title>` (identifier lowercased with any `#`/non-alnum stripped, e.g. `MOVE-42` → `move-42`; spaces/punctuation in the title → `-`). **Do not create a worktree** — just a normal branch in the repo.
 
-- **Resume check first:** run `git branch --list '*<sanitized-identifier>*'`. If a matching local branch exists, `git checkout` it and skip straight to step 6 — do not create a new branch or re-branch from base.
-- **Otherwise:** `hotfix/` branches from latest `main`; `feature/`/`bugfix/` branch from latest `develop`, falling back to `main` if the repo has no `develop`. Fetch and fast-forward the base branch, then `git checkout -b <branch-name> <base>`.
-- **Move the task to "Doing"** — only when a *new* branch was just created above (not on resume). The MCP server has no kanban/bucket tool, so do this via a direct REST call using the same credentials already configured for the `vikunja` MCP server (`VIKUNJA_URL`/`VIKUNJA_API_TOKEN` in `~/.claude.json`'s `mcpServers.vikunja.env`):
-  1. `GET {VIKUNJA_URL}/projects/{project_id}/views` → find the entry with `view_kind == "kanban"`, note its `id` as `{view_id}`.
-  2. `GET {VIKUNJA_URL}/projects/{project_id}/views/{view_id}/buckets` → find the bucket whose `title` case-insensitively matches "doing", note its `id` as `{bucket_id}`. If no such bucket exists, skip this silently and mention it in the orient summary — don't guess a different bucket or create one.
-  3. `POST {VIKUNJA_URL}/projects/{project_id}/views/{view_id}/buckets/{bucket_id}/tasks` with JSON body `{"task_id": <task's global id>}`.
+- **Resume check first:** run `git branch --list '*<sanitized-identifier>*'`. If a matching local branch exists, `git checkout` it and skip straight to step 6 — do not create a new branch, re-branch from base, or move the task in Vikunja (a resumed task is presumably already further along than "Doing").
+- **Otherwise:** `hotfix/` branches from latest `main`; `feature/`/`bugfix/` branch from latest `develop`, falling back to `main` if the repo has no `develop`. Fetch and fast-forward the base branch, then `git checkout -b <branch-name> <base>`, then move the task to "Doing".
+
+### Moving the task to "Doing"
+
+The MCP server has no kanban/bucket tool, so do this via a direct REST call using the same credentials already configured for the `vikunja` MCP server (`VIKUNJA_URL`/`VIKUNJA_API_TOKEN` in `~/.claude.json`'s `mcpServers.vikunja.env`):
+1. `GET {VIKUNJA_URL}/projects/{project_id}/views` → find the entry with `view_kind == "kanban"`, note its `id` as `{view_id}`.
+2. `GET {VIKUNJA_URL}/projects/{project_id}/views/{view_id}/buckets` → find the bucket whose `title` case-insensitively matches "doing", note its `id` as `{bucket_id}`. If no such bucket exists, skip this silently and mention it in the orient summary — don't guess a different bucket or create one.
+3. `POST {VIKUNJA_URL}/projects/{project_id}/views/{view_id}/buckets/{bucket_id}/tasks` with JSON body `{"task_id": <task's global id>}`.
 
 ## 6. Orient
 
