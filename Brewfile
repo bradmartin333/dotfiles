@@ -22,12 +22,15 @@ cask "gimp"
 cask "inkscape"
 # Markdown editor
 cask "markedit"
+# Imaging utility to install operating systems to a microSD card
+cask "raspberry-pi-imager"
 # Music streaming service
 cask "spotify"
 # Mesh VPN based on WireGuard
 cask "tailscale-app"
 vscode "anthropic.claude-code"
-vscode "mkhl.direnv"
+vscode "dart-code.dart-code"
+vscode "dart-code.flutter"
 vscode "ms-vscode-remote.remote-ssh"
 vscode "ms-vscode-remote.remote-ssh-edit"
 vscode "ms-vscode-remote.vscode-remote-extensionpack"
