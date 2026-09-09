@@ -87,3 +87,4 @@ Print a short summary: task title, description, labels, due date, resolved repo,
 
 - Make sure task names are simple so that future branches can have a clean slugified name. Avoid punctuation, special characters, and long sentences.
 - If a task is too big, break it into subtasks with relations established in Vikunja. Subtasks can use the same repo and branch as the parent task.
+- Write descriptions and comments in plain Markdown, never raw HTML (`<p>`, `<ol>`, etc.). Vikunja's own web editor stores rich text as HTML, but the API/MCP tool accepts plain text fine — don't mimic the HTML just because that's what the field happens to contain elsewhere.
