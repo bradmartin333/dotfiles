@@ -76,7 +76,7 @@ Print a short summary: task title, description, labels, due date, resolved repo,
 
 ## 7. Working agreement for the rest of the session
 
-- As work progresses, post short progress comments on the Vikunja task automatically via the `vikunja` MCP comment tool — no need to ask each time.
+- As work progresses, post short progress comments on the Vikunja task automatically via the `vikunja` MCP comment tool — no need to ask each time. Format them per step 9.
 - Always ask for explicit confirmation before marking the Vikunja task Done.
 - Commit locally as work is completed. Never run `git push` or `gh pr create` on your own initiative — leave pushing and opening a PR to the user, and wait for them to ask.
 - Exception: if the user explicitly grants standing consent to push/open PRs as you go (e.g. "you can take the wheel on pushes from here" or "push whenever you're ready without asking"), honor that for the rest of *this* session only — it doesn't carry forward to future invocations of this skill, and it never extends to marking the Vikunja task Done, which always requires confirmation regardless.
@@ -87,4 +87,40 @@ Print a short summary: task title, description, labels, due date, resolved repo,
 
 - Make sure task names are simple so that future branches can have a clean slugified name. Avoid punctuation, special characters, and long sentences.
 - If a task is too big, break it into subtasks with relations established in Vikunja. Subtasks can use the same repo and branch as the parent task.
-- Write descriptions and comments in plain Markdown, never raw HTML (`<p>`, `<ol>`, etc.). Vikunja's own web editor stores rich text as HTML, but the API/MCP tool accepts plain text fine — don't mimic the HTML just because that's what the field happens to contain elsewhere.
+- Format descriptions and comments per **Writing for Vikunja** below.
+
+## 9. Writing for Vikunja (descriptions and comments)
+
+Vikunja renders descriptions and comments as **HTML, not Markdown**. Markdown syntax (`**bold**`, backticks, `- ` bullets, `###`) shows up as literal characters, and any unescaped `<tag>` in the text is swallowed as markup and vanishes. Write the same HTML its web editor produces.
+
+**Allowed tags** — stick to these, nothing else (no `style`, `class`, tables, or `<br>` chains):
+- `<h3>` for section headings (only when there's more than one section)
+- `<p>` for each paragraph — never bare text outside a block tag
+- `<ul><li>…</li></ul>` for bullets (`<ol>` only when order matters)
+- `<strong>`, `<em>`, `<code>` inline
+- `<pre><code>…</code></pre>` for multi-line output
+- `<a href="…">…</a>` for links
+
+**Escape** `&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;` in all text, especially inside `<code>` — e.g. write `<code>&lt;span&gt;</code>`, or it disappears.
+
+**Make it digestible** — the reader is a human glancing at a task, not reviewing a diff:
+- Lead with a one-sentence outcome: what changed or what was decided.
+- Keep a progress comment to roughly 3–6 bullets. Say what and why, not a line-by-line tour; file names are fine, but leave exhaustive detail to the commit messages.
+- Group under `<h3>` headings only when it genuinely helps (e.g. <em>Done</em>, <em>Verified</em>, <em>Follow-ups</em>).
+- Follow-ups or out-of-scope findings go in their own short list, or better, become new tasks.
+- Keep `<code>` for real identifiers (files, commands, commit hashes), not for emphasis.
+
+Example comment:
+
+```html
+<p>Changelog link is live on <code>develop</code> (<code>8634464</code>).</p>
+<h3>Changes</h3>
+<ul>
+<li>Added <code>CHANGELOG.md</code> and bumped the app version to 0.1.0.</li>
+<li>The navbar version is now a link to the changelog on GitHub.</li>
+</ul>
+<h3>Follow-ups</h3>
+<ul>
+<li>Lobby stats card shows <code>[object Object]</code> for the server version.</li>
+</ul>
+```
