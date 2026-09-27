@@ -2,7 +2,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # aliases
 alias serve="python3 -m http.server"
-alias hmm='nano "$(date +%d%b%Y).txt"'
+alias hmm='mkdir -p ~/Documents/notes && cd ~/Documents/notes && nano "$(date +%d%b%Y).txt"'
 alias markdown="open -a markedit"
 alias hl='echo "starting tailscale"; tailscale up; echo "connecting"; ssh -t brad@homelab "cd /opt/homelab && exec \$SHELL"'
 
