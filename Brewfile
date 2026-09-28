@@ -14,6 +14,8 @@ brew "gh"
 brew "git"
 # Open-source, cross-platform JavaScript runtime environment
 brew "node"
+# Rsync for cloud storage
+brew "rclone"
 # Static analysis and lint tool, for (ba)sh scripts
 brew "shellcheck"
 # Display directories as trees (with optional color/HTML output)
