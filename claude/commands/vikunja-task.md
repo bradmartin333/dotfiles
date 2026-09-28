@@ -58,7 +58,7 @@ If git-flow branching is confirmed, determine a prefix from the task's Vikunja l
 - contains "bug" or "fix" → `bugfix/`
 - otherwise → `feature/`
 
-Branch name: `<prefix><sanitized-identifier>-<slugified-task-title>` (identifier lowercased with any `#`/non-alnum stripped, e.g. `MOVE-42` → `move-42`; spaces/punctuation in the title → `-`). **Do not create a worktree** — just a normal branch in the repo.
+Branch name: `<prefix><sanitized-identifier>-<clean-task-title>` (identifier lowercased with any `#`/non-alnum stripped, e.g. `MOVE-42` → `move-42`; spaces/punctuation in the title → `-`; clean task title is a simplification of the original title for a succinct description). **Do not create a worktree** — just a normal branch in the repo.
 
 - **Resume check first:** run `git branch --list '*<sanitized-identifier>*'`. If a matching local branch exists, `git checkout` it and skip straight to step 6 — do not create a new branch, re-branch from base, or move the task in Vikunja (a resumed task is presumably already further along than "Doing").
 - **Otherwise:** `hotfix/` branches from latest `main`; `feature/`/`bugfix/` branch from latest `develop`, falling back to `main` if the repo has no `develop`. Fetch and fast-forward the base branch, then `git checkout -b <branch-name> <base>`, then move the task to "Doing".

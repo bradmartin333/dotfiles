@@ -3,6 +3,7 @@ export PATH="$HOME/.local/bin:$PATH"
 # aliases
 alias serve="python3 -m http.server"
 alias hmm='mkdir -p ~/Documents/notes && cd ~/Documents/notes && nano "$(date +%d%b%Y).txt"'
+alias rhmm='rclone sync ~/Documents/notes  gdrive:backup/hmm --bwlimit=8.5M --progress'
 alias markdown="open -a markedit"
 alias hl='echo "starting tailscale"; tailscale up; echo "connecting"; ssh -t brad@homelab "cd /opt/homelab && exec \$SHELL"'
 
