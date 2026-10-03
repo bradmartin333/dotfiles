@@ -1,6 +1,6 @@
 # Vikunja ↔ GitHub repo convention
 
-Used by `claude/commands/vikunja-task.md`.
+Used by the `vikunja-task` skill (`../SKILL.md`).
 
 ## Task references need a per-project Identifier prefix
 

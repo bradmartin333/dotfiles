@@ -5,9 +5,19 @@
       "Bash(git checkout -b bugfix/*)",
       "Bash(git branch feature/*)",
       "Bash(git branch bugfix/*)",
-      "mcp__vikunja__vikunja_projects",
-      "mcp__vikunja__vikunja_tasks",
-      "mcp__vikunja__vikunja_auth"
+      "mcp__vikunja__projects_read",
+      "mcp__vikunja__tasks_list",
+      "mcp__vikunja__tasks_read",
+      "mcp__vikunja__tasks_create",
+      "mcp__vikunja__tasks_update",
+      "mcp__vikunja__labels_list",
+      "mcp__vikunja__labels_read",
+      "mcp__vikunja__projects_list",
+      "mcp__vikunja__task_comments_list",
+      "mcp__vikunja__task_comments_read",
+      "mcp__vikunja__task_comments_create",
+      "mcp__vikunja__users_search",
+      "mcp__vikunja__find_action"
     ]
   },
   "hooks": {
@@ -27,6 +37,6 @@
   "enableWorkflows": true,
   "effortLevel": "high",
   "theme": "dark",
-  "useAutoModeDuringPlan": false,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "useAutoModeDuringPlan": false
 }

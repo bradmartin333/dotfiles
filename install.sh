@@ -15,7 +15,11 @@ declare -A FILES=(
 # Claude files to symlink
 declare -A CLAUDE_FILES=(
     ["claude/settings.json"]="$CLAUDE_DIR/settings.json"
-    ["claude/commands/vikunja-task.md"]="$CLAUDE_DIR/commands/vikunja-task.md"
+)
+
+# Old symlinks from before these moved into claude/skills/
+STALE_CLAUDE_LINKS=(
+    "$CLAUDE_DIR/commands/vikunja-task.md"
 )
 
 # Helper function to create symlink safely
@@ -60,6 +64,13 @@ for REPO_FILE in "${!CLAUDE_FILES[@]}"; do
     create_symlink "$DOTFILES_DIR/$REPO_FILE" "$TARGET"
 done
 
+for TARGET in "${STALE_CLAUDE_LINKS[@]}"; do
+    if [ -L "$TARGET" ] && [ ! -e "$TARGET" ]; then
+        rm -f "$TARGET"
+        echo "✓ Removed stale link $TARGET"
+    fi
+done
+
 # Symlink the whole Claude skills directory so new skills are picked up automatically
 SKILLS_SOURCE="$DOTFILES_DIR/claude/skills"
 SKILLS_TARGET="$CLAUDE_DIR/skills"
@@ -86,5 +97,7 @@ else
 fi
 
 echo -e "\n✓ Dotfiles installation complete!"
+echo "  vikunja-task needs the Vikunja MCP server (once per machine):"
+echo "    claude mcp add -s user --transport http vikunja https://tasks.coblab.net/api/v2/mcp --header 'Authorization: Bearer <token>'"
 echo "  run 'exec zsh' to pick up the new shell config"
 

@@ -1,20 +1,38 @@
 ---
-description: Pick up a Vikunja task by ID, resolve its repo, branch, and start work
+name: vikunja-task
+description: Pick up a Vikunja task by ID, resolve its repo, branch, and start work. Use when the user gives a Vikunja task reference (a numeric id like 217 or a PREFIX-N like MOVE-42) and wants to start or resume work on it.
+argument-hint: <task-ref>
 ---
 
-Arguments (`$ARGUMENTS`): `<task-ref>`.
+Arguments (`$ARGUMENTS`): `<task-ref>`. If `$ARGUMENTS` wasn't substituted, use the task reference the user gave.
+
+## 0. Vikunja MCP tools
+
+All Vikunja access goes through the official Vikunja MCP server (`https://tasks.coblab.net/api/v2/mcp`, configured as the `vikunja` MCP server). Typed tools used below:
+- Projects: `projects_list`, `projects_read` (includes the project's views)
+- Tasks: `tasks_list` (all projects, supports `filter`), `tasks_read` (`expand` can add `comments`, `subtasks`, `buckets`), `tasks_create`, `tasks_update`
+- Comments: `task_comments_list`, `task_comments_create`, `task_comments_update`
+- Labels, assignees, `users_search`
+
+Anything without a typed tool is reached through `find_action` (lists the extra actions the token authorizes; pass `resource` or `action` for input schemas) and `do_action` (runs one). What shows up there depends on the token's scopes, so check rather than assume. If an action a step needs isn't listed, skip that step and say which scope the token is missing.
+
+Rich-text fields default to HTML. Pass `format: "markdown"` on **reads only**, to get descriptions and comments back as Markdown, which is easier to read. On **writes** (`task_comments_create`, `task_comments_update`, `tasks_create`, `tasks_update` descriptions), leave `format` unset and send HTML per step 9. Passing `format: "markdown"` with HTML content saves an empty comment. After creating a comment, check that the returned `comment` field isn't empty.
+
+`tasks_update` may replace the whole task: read the task first and pass back every field you aren't changing (title, description, done, due_date, priority, ...), so nothing gets cleared.
+
+If there are no `vikunja` MCP tools at all, stop and tell the user to add the server: `claude mcp add -s user --transport http vikunja https://tasks.coblab.net/api/v2/mcp --header 'Authorization: Bearer <token>'` (the token needs the `mcp:access` scope).
 
 ## 1. Resolve and fetch the task
 
 `<task-ref>` can be given two ways — the plain "#N" you see in the Vikunja UI is a **per-project** counter, not a global ID, and is NOT accepted directly because it's ambiguous across projects:
 
-- **A bare number** (e.g. `217`) — the task's global numeric `id`. Call `vikunja_tasks.get` with it directly.
+- **A bare number** (e.g. `217`) — the task's global numeric `id`. Read it directly with `tasks_read`.
 - **`PREFIX-N`** (e.g. `MOVE-42`) — a project's short **Identifier** prefix (set per-project in Vikunja under Project → Settings → General) plus its per-project task index. This form is globally unique and human-typeable, unlike bare `#N`. Resolve it:
-  1. List projects (`vikunja_projects.list`) and find the one whose `identifier` field case-insensitively matches `PREFIX`.
-     - No match → stop and report: that project likely has no Identifier configured yet. Point at `~/.dotfiles/claude/vikunja-notes.md` for the convention and ask the user to set one (or give a bare numeric ID instead).
-  2. List that project's tasks (`vikunja_tasks.list` with `projectId`) and find the one whose `index` equals `N`.
+  1. List projects (`projects_list`) and find the one whose `identifier` field case-insensitively matches `PREFIX`.
+     - No match → stop and report: that project likely has no Identifier configured yet. Point at `references/vikunja-notes.md` (next to this skill) for the convention and ask the user to set one (or give a bare numeric ID instead).
+  2. List that project's tasks (`tasks_list` with `filter: "project = <project id>"`, paging as needed) and find the one whose `index` equals `N`.
      - No match → stop and report the task index wasn't found in that project.
-  3. Use that task's global `id` for `vikunja_tasks.get` and everything downstream.
+  3. Use that task's global `id` for `tasks_read` and everything downstream.
 
 If `<task-ref>` matches neither shape, or the resolved task doesn't exist, or the MCP server isn't reachable, stop and report that clearly — don't guess at task details.
 
@@ -22,7 +40,7 @@ Once fetched, note the task's own `identifier` field (e.g. `MOVE-42`, or `#N` if
 
 ## 2. Resolve the repo
 
-Fetch the task's parent project via the `vikunja` MCP tools. Search the project's description for a repo reference:
+Fetch the task's parent project with `projects_read` (the task's `project_id`). Search the project's description for a repo reference:
 - A GitHub URL (`https://github.com/<owner>/<repo>`), or
 - A bare `<owner>/<repo>` token.
 
@@ -32,11 +50,11 @@ If the project description has neither, fall back to scanning the task's own des
 
 Don't start work off the title and description alone — pull in what's already been said about this task:
 
-- **Comments:** call `vikunja_tasks.comment` with the task's `id` and no `comment` argument to list existing comments. Read through them for prior decisions, blockers, or requirements that supersede or refine the description — treat later comments as more current than the original description if they conflict.
-- **Related tasks:** check the fetched task's `related_tasks` object. Each relation kind (subtask, parenttask, related, blocking, blocked, etc.) can carry prior decisions or requirements that this task builds on or depends on — don't skip past them as decoration. If a related task's own description/comments look relevant but are thin in what `related_tasks` already returned, pull the full task with `vikunja_tasks.get` (and its comments) using that related task's `id`. Note anything load-bearing from related tasks in the step 6 orient summary.
-- **Attachments:** check the fetched task object for an `attachments` array (filename/id/size metadata). The MCP server's `attach` subcommand isn't implemented (MCP protocol limitation), so file *content* can't be pulled through it. If attachments exist and their content actually matters for the work:
-  - Try a direct read via the Vikunja REST API using the same credentials already configured for the `vikunja` MCP server (`VIKUNJA_URL`/`VIKUNJA_API_TOKEN` in `~/.claude.json`'s `mcpServers.vikunja.env`): `GET {VIKUNJA_URL}/tasks/{id}/attachments/{attachmentId}`.
-  - If that's not workable, just tell the user what attachments exist (filenames) and that you can't read their contents automatically — don't silently ignore them.
+- **Comments:** list the task's existing comments with `task_comments_list` (or `tasks_read` with `expand: ["comments"]`). Read through them for prior decisions, blockers, or requirements that supersede or refine the description — treat later comments as more current than the original description if they conflict.
+- **Related tasks:** check the fetched task's `related_tasks` object. Each relation kind (subtask, parenttask, related, blocking, blocked, etc.) can carry prior decisions or requirements that this task builds on or depends on — don't skip past them as decoration. If a related task's own description/comments look relevant but are thin in what `related_tasks` already returned, pull the full task with `tasks_read` (and its comments) using that related task's `id`. Note anything load-bearing from related tasks in the step 6 orient summary.
+- **Attachments:** check the fetched task object for an `attachments` array (filename/id/size metadata). If attachments exist and their content actually matters for the work:
+  - Look for an attachment action via `find_action` (e.g. `resource: "task_attachments"`) and run it with `do_action`.
+  - If that's not available or returns nothing usable, just tell the user what attachments exist (filenames) and that you can't read their contents automatically — don't silently ignore them.
 
 Ask for clarification if any of the above context is unclear or incomplete, and don't proceed until you have a clear understanding of the task's requirements.
 
@@ -65,10 +83,11 @@ Branch name: `<prefix><sanitized-identifier>-<clean-task-title>` (identifier low
 
 ### Moving the task to "Doing"
 
-The MCP server has no kanban/bucket tool, so do this via a direct REST call using the same credentials already configured for the `vikunja` MCP server (`VIKUNJA_URL`/`VIKUNJA_API_TOKEN` in `~/.claude.json`'s `mcpServers.vikunja.env`):
-1. `GET {VIKUNJA_URL}/projects/{project_id}/views` → find the entry with `view_kind == "kanban"`, note its `id` as `{view_id}`.
-2. `GET {VIKUNJA_URL}/projects/{project_id}/views/{view_id}/buckets` → find the bucket whose `title` case-insensitively matches "doing", note its `id` as `{bucket_id}`. If no such bucket exists, skip this silently and mention it in the orient summary — don't guess a different bucket or create one.
-3. `POST {VIKUNJA_URL}/projects/{project_id}/views/{view_id}/buckets/{bucket_id}/tasks` with JSON body `{"task_id": <task's global id>}`.
+1. `projects_read` the task's project → in its views, find the one with `view_kind == "kanban"`, note its id as `{view_id}`.
+2. List that view's buckets: there's no typed tool, so look for a bucket list action via `find_action` (e.g. `resource: "project_views"` or `"buckets"`) and run it with `do_action`. Find the bucket whose `title` case-insensitively matches "doing", note its id as `{bucket_id}`. If no such bucket exists, skip the move and mention it in the orient summary — don't guess a different bucket or create one.
+3. Move the task: `tasks_update` with `bucket_id: {bucket_id}`, passing back the task's other fields per step 0. (A dedicated bucket "add task" action from `find_action` works too.)
+
+If the token isn't authorized for the views/buckets actions, skip the move and say in the orient summary that the token needs project views/buckets access.
 
 ## 6. Orient
 
@@ -76,7 +95,7 @@ Print a short summary: task title, description, labels, due date, resolved repo,
 
 ## 7. Working agreement for the rest of the session
 
-- As work progresses, post short progress comments on the Vikunja task automatically via the `vikunja` MCP comment tool — no need to ask each time. Format them per step 9.
+- As work progresses, post short progress comments on the Vikunja task automatically via `task_comments_create` — no need to ask each time. Format them per step 9.
 - Always ask for explicit confirmation before marking the Vikunja task Done.
 - Commit locally as work is completed. Never run `git push` or `gh pr create` on your own initiative — leave pushing and opening a PR to the user, and wait for them to ask.
 - Exception: if the user explicitly grants standing consent to push/open PRs as you go (e.g. "you can take the wheel on pushes from here" or "push whenever you're ready without asking"), honor that for the rest of *this* session only — it doesn't carry forward to future invocations of this skill, and it never extends to marking the Vikunja task Done, which always requires confirmation regardless.
