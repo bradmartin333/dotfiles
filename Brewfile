@@ -12,6 +12,10 @@ brew "exiftool"
 brew "gh"
 # Distributed revision control system
 brew "git"
+# Quickly rewrite git repository history
+brew "git-filter-repo"
+# Port scanning utility for large networks
+brew "nmap"
 # Open-source, cross-platform JavaScript runtime environment
 brew "node"
 # Rsync for cloud storage
@@ -20,6 +24,8 @@ brew "rclone"
 brew "shellcheck"
 # Display directories as trees (with optional color/HTML output)
 brew "tree"
+# Markup-based typesetting system
+brew "typst"
 # Free and open-source image editor
 cask "gimp"
 # Vector graphics editor
