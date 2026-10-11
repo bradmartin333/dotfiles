@@ -6,6 +6,7 @@ alias hmm='mkdir -p ~/Documents/notes && cd ~/Documents/notes && nano "$(date +%
 alias rhmm='rclone sync ~/Documents/notes  gdrive:backup/hmm --bwlimit=8.5M --progress'
 alias markdown="open -a markedit"
 alias hl='echo "starting tailscale"; tailscale up; echo "connecting"; ssh -t brad@homelab "cd /opt/homelab && exec \$SHELL"'
+alias rhex='openssl rand -hex 32'
 
 # styling
 export CLICOLOR=1
