@@ -26,6 +26,8 @@ brew "shellcheck"
 brew "tree"
 # Markup-based typesetting system
 brew "typst"
+# App to build and share containerised applications and microservices
+cask "docker-desktop"
 # Free and open-source image editor
 cask "gimp"
 # Vector graphics editor
