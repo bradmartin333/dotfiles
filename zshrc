@@ -52,3 +52,8 @@ s.sendto('$payload'.encode(), ('255.255.255.255', 38899))
 s.close()
 "
 }
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/brad/.docker/completions $fpath)
+autoload -Uz compinit
+(( ${+_comps[docker]} )) || compinit
+# End of Docker CLI completions

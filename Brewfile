@@ -34,10 +34,14 @@ cask "gimp"
 cask "inkscape"
 # Markdown editor
 cask "markedit"
+# Programmable solid 3D CAD modeller
+cask "openscad@snapshot"
 # Imaging utility to install operating systems to a microSD card
 cask "raspberry-pi-imager"
 # Music streaming service
 cask "spotify"
+# All-in-one live streaming software
+cask "streamlabs"
 # Mesh VPN based on WireGuard
 cask "tailscale-app"
 vscode "anthropic.claude-code"
