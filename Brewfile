@@ -1,3 +1,5 @@
+# Bourne-Again SHell, a UNIX command interpreter
+brew "bash"
 # Container runtimes on MacOS (and Linux) with minimal setup
 brew "colima"
 # Load/unload environment variables based on $PWD

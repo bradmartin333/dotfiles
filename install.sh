@@ -7,20 +7,29 @@ DOTFILES_DIR="$HOME/.dotfiles"
 CLAUDE_DIR="$HOME/.claude"
 
 # List of files to symlink (repo_file:home_link)
-declare -A FILES=(
-    ["zshrc"]="$HOME/.zshrc"
-    ["gitconfig"]="$HOME/.gitconfig"
+# Plain arrays rather than declare -A so this runs on macOS's stock bash 3.2
+FILES=(
+    "zshrc:$HOME/.zshrc"
+    "gitconfig:$HOME/.gitconfig"
 )
 
 # Claude files to symlink
-declare -A CLAUDE_FILES=(
-    ["claude/settings.json"]="$CLAUDE_DIR/settings.json"
+CLAUDE_FILES=(
+    "claude/settings.json:$CLAUDE_DIR/settings.json"
+    "claude/CLAUDE.md:$CLAUDE_DIR/CLAUDE.md"
 )
 
-# Old symlinks from before these moved into claude/skills/
-STALE_CLAUDE_LINKS=(
-    "$CLAUDE_DIR/commands/vikunja-task.md"
-)
+# Clear the way for a symlink: drop an old symlink, back up a real file or directory
+move_aside() {
+    local target="$1"
+
+    if [ -L "$target" ]; then
+        rm -f "$target"
+    elif [ -e "$target" ]; then
+        mv "$target" "$target.bak.$(date +%Y%m%d%H%M%S)"
+        echo "✓ Backed up existing $target"
+    fi
+}
 
 # Helper function to create symlink safely
 create_symlink() {
@@ -32,10 +41,7 @@ create_symlink() {
         return 0
     fi
 
-    # Remove existing file or symlink to avoid conflicts
-    if [ -e "$target" ] || [ -L "$target" ]; then
-        rm -f "$target"
-    fi
+    move_aside "$target"
 
     # Ensure the target's parent directory exists
     mkdir -p "$(dirname "$target")"
@@ -48,9 +54,8 @@ create_symlink() {
 echo "Creating symlinks..."
 
 # Symlink regular dotfiles
-for REPO_FILE in "${!FILES[@]}"; do
-    TARGET="${FILES[$REPO_FILE]}"
-    create_symlink "$DOTFILES_DIR/$REPO_FILE" "$TARGET"
+for ENTRY in "${FILES[@]}"; do
+    create_symlink "$DOTFILES_DIR/${ENTRY%%:*}" "${ENTRY#*:}"
 done
 
 # Symlink Claude files (create .claude dir if needed)
@@ -59,30 +64,9 @@ if [ ! -d "$CLAUDE_DIR" ]; then
     echo "✓ Created $CLAUDE_DIR"
 fi
 
-for REPO_FILE in "${!CLAUDE_FILES[@]}"; do
-    TARGET="${CLAUDE_FILES[$REPO_FILE]}"
-    create_symlink "$DOTFILES_DIR/$REPO_FILE" "$TARGET"
+for ENTRY in "${CLAUDE_FILES[@]}"; do
+    create_symlink "$DOTFILES_DIR/${ENTRY%%:*}" "${ENTRY#*:}"
 done
-
-for TARGET in "${STALE_CLAUDE_LINKS[@]}"; do
-    if [ -L "$TARGET" ] && [ ! -e "$TARGET" ]; then
-        rm -f "$TARGET"
-        echo "✓ Removed stale link $TARGET"
-    fi
-done
-
-# Symlink the whole Claude skills directory so new skills are picked up automatically
-SKILLS_SOURCE="$DOTFILES_DIR/claude/skills"
-SKILLS_TARGET="$CLAUDE_DIR/skills"
-if [ -d "$SKILLS_SOURCE" ]; then
-    if [ -e "$SKILLS_TARGET" ] || [ -L "$SKILLS_TARGET" ]; then
-        rm -rf "$SKILLS_TARGET"
-    fi
-    ln -s "$SKILLS_SOURCE" "$SKILLS_TARGET"
-    echo "✓ Linked $SKILLS_TARGET -> $SKILLS_SOURCE"
-else
-    echo "⊘ Skipping $SKILLS_SOURCE (directory not found in dotfiles)"
-fi
 
 echo -e "\nInstalling Homebrew dependencies..."
 if command -v brew &> /dev/null; then

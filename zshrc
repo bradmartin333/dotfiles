@@ -7,6 +7,7 @@ alias rhmm='rclone sync ~/Documents/notes  gdrive:backup/hmm --bwlimit=8.5M --pr
 alias markdown="open -a markedit"
 alias hl='echo "starting tailscale"; tailscale up; echo "connecting"; ssh -t brad@homelab "cd /opt/homelab && exec \$SHELL"'
 alias rhex='openssl rand -hex 12'
+alias brewdump='brew bundle dump --file="$HOME/.dotfiles/Brewfile" --force'
 
 # styling
 export CLICOLOR=1
