@@ -57,3 +57,5 @@ fpath=(/Users/brad/.docker/completions $fpath)
 autoload -Uz compinit
 (( ${+_comps[docker]} )) || compinit
 # End of Docker CLI completions
+
+export PATH="$HOME/.anvil-cli/npm-global/bin:$HOME/.anvil-cli/node-v20/bin:$PATH"
