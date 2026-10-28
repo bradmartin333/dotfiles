@@ -6,8 +6,14 @@ alias hmm='mkdir -p ~/Documents/notes && cd ~/Documents/notes && nano "$(date +%
 alias rhmm='rclone sync ~/Documents/notes  gdrive:backup/hmm --bwlimit=8.5M --progress'
 alias markdown="open -a markedit"
 alias hl='echo "starting tailscale"; tailscale up; echo "connecting"; ssh -t brad@homelab "cd /opt/homelab && exec \$SHELL"'
+alias pi='echo "starting tailscale"; tailscale up; echo "connecting"; ssh -t brad@pi-backup "exec \$SHELL"'
 alias rhex='openssl rand -hex 12'
 alias brewdump='brew bundle dump --file="$HOME/.dotfiles/Brewfile" --force'
+
+# bat
+batdiff() {
+    git diff --name-only --relative --diff-filter=d -z | xargs -0 bat --diff
+}
 
 # styling
 export CLICOLOR=1
@@ -53,6 +59,7 @@ s.sendto('$payload'.encode(), ('255.255.255.255', 38899))
 s.close()
 "
 }
+
 # The following lines have been added by Docker Desktop to enable Docker CLI completions.
 fpath=(/Users/brad/.docker/completions $fpath)
 autoload -Uz compinit
