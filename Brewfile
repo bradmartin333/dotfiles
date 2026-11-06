@@ -18,6 +18,8 @@ brew "gh"
 brew "git"
 # Quickly rewrite git repository history
 brew "git-filter-repo"
+# Git extension for versioning large files
+brew "git-lfs"
 # Port scanning utility for large networks
 brew "nmap"
 # Open-source, cross-platform JavaScript runtime environment
