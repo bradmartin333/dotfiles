@@ -32,6 +32,8 @@ brew "shellcheck"
 brew "tree"
 # Markup-based typesetting system
 brew "typst"
+# Suite of barcodes-reading tools
+brew "zbar"
 # App to build and share containerised applications and microservices
 cask "docker-desktop"
 # Free and open-source image editor
@@ -50,6 +52,8 @@ cask "spotify"
 cask "streamlabs"
 # Mesh VPN based on WireGuard
 cask "tailscale-app"
+# Multimedia player
+cask "vlc"
 vscode "anthropic.claude-code"
 vscode "dart-code.dart-code"
 vscode "dart-code.flutter"
@@ -59,5 +63,6 @@ vscode "ms-vscode-remote.vscode-remote-extensionpack"
 vscode "ms-vscode.remote-explorer"
 vscode "ms-vscode.remote-server"
 vscode "ms-vscode.vscode-serial-monitor"
+vscode "redhat.vscode-yaml"
 vscode "ritwickdey.liveserver"
 vscode "tomoki1207.pdf"

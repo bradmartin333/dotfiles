@@ -24,23 +24,18 @@
       "mcp__vikunja__do_action",
       "mcp__vikunja__filter_syntax"
     ],
-    "ask": [
-      "EnterWorktree",
-      "Bash(git worktree add *)",
-      "Bash(git -C * worktree add *)"
-    ],
     "deny": [
       "Read(~/.git-credentials)",
       "Read(~/.claude.json)",
       "Read(**/.env*)"
+    ],
+    "ask": [
+      "EnterWorktree",
+      "Bash(git worktree add *)",
+      "Bash(git -C * worktree add *)"
     ]
   },
-  "model": "opus",
-  "modelSettings": {
-    "claude-opus-5-5": {
-      "effortLevel": "high"
-    }
-  },
+  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -69,9 +64,14 @@
     "baseRef": "head"
   },
   "enableWorkflows": true,
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
   "theme": "dark",
-  "agentPushNotifEnabled": true,
   "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
   "autoMode": {
     "environment": [
       "$defaults",
