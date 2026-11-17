@@ -12,6 +12,8 @@ brew "docker"
 brew "docker-compose"
 # Perl lib for reading and writing EXIF metadata
 brew "exiftool"
+# Play, record, convert, and stream select audio and video codecs
+brew "ffmpeg"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
